@@ -1,0 +1,28 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV PIP_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu
+
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends \
+	   tesseract-ocr \
+	   tesseract-ocr-por \
+	&& rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Pré-baixa os modelos do docling durante o build para que o container
+# não precise de internet em tempo de execução e inicie sem atraso.
+RUN python -c "\
+from docling.datamodel.base_models import InputFormat; \
+from docling.datamodel.pipeline_options import PdfPipelineOptions; \
+from docling.document_converter import DocumentConverter, PdfFormatOption; \
+DocumentConverter(format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=PdfPipelineOptions())})"
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

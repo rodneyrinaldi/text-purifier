@@ -1,0 +1,8 @@
+no arquivo que é processado as vezes pode ter menos páginas do que realmente deveria ter, 
+por exemplo algumas páginas podem ter sido excluídas, 
+mas o arquivo mantem a informação original do número da folha,
+ mesmo que não corresponda ao número fisico da página no arquivo, 
+ dessa forma vamos alterar a marcação da página adicionando o número que está contido na folha sendo lida junto,
+ com o número da página fisica. dessa forma fica como está hoje "[ORIGEM_PAGINA_PDF:00001]",
+  mais por exemplo "fls. xxx" e assim por diante ficando assim "[ORIGEM_PAGINA_PDF:00001 ou NUMERO_INTERNO:00001]"
+

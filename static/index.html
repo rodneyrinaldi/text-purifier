@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>text Purify</title>
+  <style>
+    :root {
+      --bg-a: #f2f8ff;
+      --bg-b: #ecfffd;
+      --card: #ffffff;
+      --text: #123;
+      --muted: #5a7085;
+      --accent: #1e88e5;
+      --accent-2: #00acc1;
+      --line: #d9e7f2;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top left, #ffffff 0%, var(--bg-a) 55%, var(--bg-b) 100%);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .card {
+      width: min(760px, 100%);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 10px 35px rgba(30, 136, 229, 0.12);
+      padding: 24px;
+      animation: enter 0.4s ease;
+    }
+
+    @keyframes enter {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    p {
+      margin: 0 0 20px;
+      color: var(--muted);
+    }
+
+    form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .input {
+      border: 1px dashed #a7c3d8;
+      border-radius: 12px;
+      padding: 12px;
+      background: #fbfdff;
+    }
+
+    .checks {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      color: var(--muted);
+    }
+
+    .range {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .range label {
+      display: grid;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .range input {
+      width: 140px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px;
+      font: inherit;
+    }
+
+    .hint {
+      margin: -6px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    button {
+      width: fit-content;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 16px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+
+    pre {
+      margin-top: 18px;
+      background: #f9fcff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 380px;
+      overflow: auto;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>text Purify</h1>
+    <p>Envie um PDF e receba o conteúdo limpo em Markdown.</p>
+
+    <form id="form">
+      <div class="input">
+        <input type="file" id="file" name="file" accept="application/pdf" required />
+      </div>
+
+      <div class="checks">
+        <label><input type="checkbox" name="anon" /> anon</label>
+        <label><input type="checkbox" name="llm" /> llm</label>
+      </div>
+
+      <div class="range">
+        <label>
+          Página inicial
+          <input type="number" name="page_start" min="1" placeholder="Início" />
+        </label>
+        <label>
+          Página final
+          <input type="number" name="page_end" min="1" placeholder="Fim" />
+        </label>
+      </div>
+
+      <p class="hint">Deixe as páginas em branco para ler o documento inteiro.</p>
+
+      <button type="submit">Processar</button>
+    </form>
+
+    <pre id="out">A saída em Markdown aparecerá aqui.</pre>
+  </main>
+
+  <script>
+    const form = document.getElementById("form");
+    const out = document.getElementById("out");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      out.textContent = "Processando...";
+
+      const data = new FormData(form);
+      const startValue = String(data.get("page_start") || "").trim();
+      const endValue = String(data.get("page_end") || "").trim();
+
+      if (!startValue) {
+        data.delete("page_start");
+      }
+
+      if (!endValue) {
+        data.delete("page_end");
+      }
+
+      const start = startValue ? Number(startValue) : null;
+      const end = endValue ? Number(endValue) : null;
+
+      if ((start !== null && start < 1) || (end !== null && end < 1) || (start !== null && end !== null && start > end)) {
+        out.textContent = "Intervalo de paginas invalido.";
+        return;
+      }
+
+      const response = await fetch("/process", {
+        method: "POST",
+        body: data,
+      });
+
+      const text = await response.text();
+      out.textContent = text;
+
+      const disposition = response.headers.get("content-disposition") || "";
+      const match = disposition.match(/filename="?([^";]+)"?/i);
+      const filename = match ? match[1] : "saida.md";
+      const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
