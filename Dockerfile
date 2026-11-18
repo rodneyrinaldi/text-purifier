@@ -5,7 +5,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     OMP_THREAD_LIMIT=1 \
-    OCR_LANG=por+eng
+    OCR_LANG=por+eng \
+    TZ=America/Sao_Paulo
 
 WORKDIR /app
 
@@ -18,6 +19,7 @@ RUN apt-get update \
        tesseract-ocr-eng \
        tesseract-ocr-osd \
        libglib2.0-0 \
+       tzdata \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .

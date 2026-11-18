@@ -14,10 +14,12 @@
       --accent: #1e88e5;
       --accent-2: #00acc1;
       --line: #d9e7f2;
+      --ok: #2e7d32;
+      --mid: #f9a825;
+      --low: #ef6c00;
+      --crit: #c62828;
     }
-
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       font-family: "Segoe UI", "Helvetica Neue", sans-serif;
@@ -26,190 +28,401 @@
       min-height: 100vh;
       display: grid;
       place-items: center;
-      padding: 20px;
+      padding: 20px 16px;
     }
-
     .card {
-      width: min(760px, 100%);
+      width: min(860px, 100%);
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: 16px;
       box-shadow: 0 10px 35px rgba(30, 136, 229, 0.12);
       padding: 24px;
-      animation: enter 0.4s ease;
     }
-
-    @keyframes enter {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    h1 {
-      margin: 0 0 6px;
-      font-size: 1.5rem;
-      font-weight: 600;
-      letter-spacing: 0.2px;
-    }
-
-    p {
-      margin: 0 0 20px;
-      color: var(--muted);
-    }
-
-    form {
-      display: grid;
-      gap: 14px;
-    }
-
-    .input {
-      border: 1px dashed #a7c3d8;
-      border-radius: 12px;
-      padding: 12px;
-      background: #fbfdff;
-    }
-
-    .checks {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      color: var(--muted);
-    }
-
-    .range {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .range label {
-      display: grid;
-      gap: 4px;
-      color: var(--muted);
-      font-size: 0.92rem;
-    }
-
-    .range input {
-      width: 140px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 8px;
-      font: inherit;
-    }
-
-    .hint {
-      margin: -6px 0 0;
-      color: var(--muted);
-      font-size: 0.88rem;
-    }
-
+    h1 { margin: 0 0 6px; font-size: 1.5rem; font-weight: 600; }
+    p { margin: 0 0 16px; color: var(--muted); }
+    form { display: grid; gap: 14px; }
+    .input { border: 1px dashed #a7c3d8; border-radius: 12px; padding: 12px; background: #fbfdff; }
+    fieldset { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin: 0; }
+    legend { color: var(--muted); font-size: 0.85rem; padding: 0 6px; }
+    .checks { display: grid; gap: 6px; color: var(--text); font-size: 0.95rem; }
+    .checks small { color: var(--muted); }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .row label { display: grid; gap: 4px; color: var(--muted); font-size: 0.92rem; flex: 1 1 160px; }
+    .row input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font: inherit; }
+    .hint { margin: -6px 0 0; color: var(--muted); font-size: 0.88rem; }
     button {
-      width: fit-content;
-      border: 0;
-      border-radius: 10px;
-      padding: 10px 16px;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      width: fit-content; border: 0; border-radius: 10px; padding: 10px 16px; color: #fff;
+      font-weight: 600; cursor: pointer; background: linear-gradient(90deg, var(--accent), var(--accent-2));
     }
-
+    button:disabled { opacity: 0.55; cursor: progress; }
+    button.secondary { background: #fff; color: var(--accent); border: 1px solid var(--accent); }
+    .status { display: flex; gap: 10px; flex-wrap: wrap; font-size: 0.85rem; margin-bottom: 14px; }
+    .pill { border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; color: var(--muted); }
+    .pill.ok { color: var(--ok); border-color: #b9dfbb; }
+    .pill.bad { color: var(--crit); border-color: #f0b9b9; }
+    .progress { margin-top: 18px; display: none; border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+    .bar { height: 10px; background: #eef4f9; border-radius: 999px; overflow: hidden; }
+    .bar > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .6s; }
+    .phase { margin: 0 0 10px; font-weight: 600; font-size: 0.98rem; }
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 12px 0; }
+    .metric { background: #f7fbfe; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+    .metric b { display: block; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+    .metric small { color: var(--muted); font-size: 0.78rem; }
+    .stages { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; font-size: 0.9rem; }
+    .stages li { display: grid; grid-template-columns: 20px 1fr auto; gap: 8px; align-items: baseline; }
+    .stages .ico { text-align: center; }
+    .stages .meta { color: var(--muted); font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+    .stages li.pending { color: var(--muted); }
+    .stages li.running { font-weight: 600; }
+    .stages li.done .ico { color: var(--ok); }
+    .stages li.running .ico { color: var(--accent); }
+    .stages li.skipped, .stages li.error { color: var(--muted); text-decoration: line-through; }
+    .stages li.error .ico { color: var(--crit); }
+    .ai-live { display: none; margin-top: 10px; background: #f3f9ff; border: 1px solid #cfe3f6; border-radius: 10px; padding: 8px 10px; font-size: 0.88rem; }
+    .ai-live .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 6px; animation: pulse 1.2s infinite; }
+    @keyframes pulse { 50% { opacity: .25; } }
+    .legend { font-size: 0.78rem; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+    .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+    .summary { margin-top: 18px; display: none; border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+    .summary h2 { margin: 0 0 8px; font-size: 1.05rem; }
+    .pages { display: flex; flex-wrap: wrap; gap: 3px; margin: 10px 0; }
+    .pages span { width: 14px; height: 22px; border-radius: 3px; display: inline-block; }
+    .error { color: var(--crit); }
     pre {
-      margin-top: 18px;
-      background: #f9fcff;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 14px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      max-height: 380px;
-      overflow: auto;
-      line-height: 1.5;
+      margin-top: 18px; background: #f9fcff; border: 1px solid var(--line); border-radius: 12px; padding: 14px;
+      white-space: pre-wrap; word-wrap: break-word; max-height: 420px; overflow: auto; line-height: 1.5;
     }
   </style>
 </head>
 <body>
   <main class="card">
     <h1>text Purify</h1>
-    <p>Envie um PDF e receba o conteúdo limpo em Markdown.</p>
+    <p>Envie um PDF de processo ou documento jurídico e receba o texto integral em Markdown, com a saúde da leitura de cada página e um relatório de processamento.</p>
+
+    <div class="status" id="status"><span class="pill">verificando serviços…</span></div>
 
     <form id="form">
       <div class="input">
         <input type="file" id="file" name="file" accept="application/pdf" required />
       </div>
 
-      <div class="checks">
-        <label><input type="checkbox" name="anon" /> anon</label>
-        <label><input type="checkbox" name="llm" /> llm</label>
-      </div>
+      <fieldset>
+        <legend>Opções</legend>
+        <div class="checks">
+          <label><input type="checkbox" name="remove_repeated" checked /> Remover cabeçalhos/rodapés repetidos <small>(mantém a 1ª ocorrência)</small></label>
+          <label><input type="checkbox" name="anon" /> Anonimizar dados pessoais</label>
+          <label><input type="checkbox" name="llm_vision" id="llm_vision" /> IA: transcrever páginas com leitura comprometida (manuscritos, imagens) <small>(modelo de visão)</small></label>
+          <label><input type="checkbox" name="llm" id="llm" /> IA: revisar erros de OCR <small>(modelo de texto, com salvaguardas)</small></label>
+        </div>
+      </fieldset>
 
-      <div class="range">
-        <label>
-          Página inicial
-          <input type="number" name="page_start" min="1" placeholder="Início" />
-        </label>
-        <label>
-          Página final
-          <input type="number" name="page_end" min="1" placeholder="Fim" />
-        </label>
+      <div class="row">
+        <label>Página inicial <input type="number" name="page_start" min="1" placeholder="Início" /></label>
+        <label>Página final <input type="number" name="page_end" min="1" placeholder="Fim" /></label>
+        <label>Senha do PDF <input type="password" name="password" autocomplete="off" placeholder="se houver" /></label>
+        <label>Operador <input type="text" name="operador" maxlength="120" placeholder="seu nome (relatório)" /></label>
       </div>
-
       <p class="hint">Deixe as páginas em branco para ler o documento inteiro.</p>
 
-      <button type="submit">Processar</button>
+      <button type="submit" id="submit">Processar</button>
     </form>
+
+    <div class="progress" id="progress" aria-live="polite">
+      <div class="phase" id="phase">Enviando…</div>
+      <div class="bar"><div id="barfill"></div></div>
+      <div class="metrics">
+        <div class="metric"><small>Decorrido</small><b id="m-elapsed">—</b></div>
+        <div class="metric"><small id="m-eta-label">Tempo restante (estimado)</small><b id="m-eta">calculando…</b></div>
+        <div class="metric"><small>Término previsto</small><b id="m-finish">—</b></div>
+        <div class="metric"><small>Páginas lidas</small><b id="m-pages">—</b></div>
+      </div>
+      <div class="ai-live" id="ai-live"></div>
+      <ul class="stages" id="stages"></ul>
+      <div id="live-map" style="display:none">
+        <div class="pages" id="live-pages"></div>
+        <div class="legend">
+          <span><i style="background:var(--ok)"></i>≥90% alta</span>
+          <span><i style="background:var(--mid)"></i>70–89% média</span>
+          <span><i style="background:var(--low)"></i>50–69% baixa</span>
+          <span><i style="background:var(--crit)"></i>&lt;50% crítica</span>
+          <span><i style="background:#e3ebf2"></i>a ler</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary" id="summary"></div>
 
     <pre id="out">A saída em Markdown aparecerá aqui.</pre>
   </main>
 
   <script>
-    const form = document.getElementById("form");
-    const out = document.getElementById("out");
+    const $ = (id) => document.getElementById(id);
+    const form = $("form"), out = $("out");
+    let lastResult = null;
 
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      out.textContent = "Processando...";
+    function healthColor(h) {
+      if (h >= 90) return "var(--ok)";
+      if (h >= 70) return "var(--mid)";
+      if (h >= 50) return "var(--low)";
+      return "var(--crit)";
+    }
 
-      const data = new FormData(form);
-      const startValue = String(data.get("page_start") || "").trim();
-      const endValue = String(data.get("page_end") || "").trim();
+    function pill(text, ok) {
+      const s = document.createElement("span");
+      s.className = "pill " + (ok ? "ok" : "bad");
+      s.textContent = text;
+      return s;
+    }
 
-      if (!startValue) {
-        data.delete("page_start");
+    async function loadStatus() {
+      const box = $("status");
+      try {
+        const r = await fetch("/status");
+        const st = await r.json();
+        box.innerHTML = "";
+        const t = st.tesseract || {};
+        box.appendChild(pill(t.available ? `OCR Tesseract ${t.version}` : "OCR indisponível", t.available));
+        const l = st.llm || {};
+        if (l.available) {
+          box.appendChild(pill(`IA local: ${l.models.length} modelo(s)`, true));
+          box.appendChild(pill(`visão: ${l.vision_model || "nenhum"}`, !!l.vision_model));
+          box.appendChild(pill(`texto: ${l.text_model || "nenhum"}`, !!l.text_model));
+        } else {
+          box.appendChild(pill(`IA local indisponível (${l.url || "?"})`, false));
+        }
+        box.appendChild(pill(`${st.workers} worker(s) · OCR ${st.always_ocr ? "em todas as páginas" : "sob demanda"}`, true));
+      } catch (e) {
+        box.innerHTML = "";
+        box.appendChild(pill("não foi possível consultar o status", false));
+      }
+    }
+
+    function fmtDur(sec) {
+      if (sec === null || sec === undefined) return "—";
+      sec = Math.max(0, Math.round(sec));
+      const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+      if (h) return `${h} h ${String(m).padStart(2, "0")} min`;
+      if (m) return `${m} min ${String(s).padStart(2, "0")} s`;
+      return `${s} s`;
+    }
+
+    function fmtEta(sec) {
+      // arredonda para não "pular" a cada segundo
+      if (sec === null || sec === undefined) return "calculando…";
+      if (sec < 5) return "instantes";
+      if (sec < 60) return `~${Math.ceil(sec / 5) * 5} s`;
+      if (sec < 600) return "~" + fmtDur(Math.ceil(sec / 10) * 10);
+      return "~" + fmtDur(Math.ceil(sec / 60) * 60);
+    }
+
+    const ICONS = { done: "✓", running: "●", pending: "○", skipped: "–", error: "✕" };
+    let maxPct = 0, lastPagesKey = "";
+
+    function renderProgress(st) {
+      const p = st.progress || {};
+      const running = p.state === "running";
+      $("phase").textContent = p.state === "queued"
+        ? `Na fila há ${fmtDur(p.queued_for)} — aguardando outro processamento terminar`
+        : (p.detail || st.phase || "Processando…");
+
+      // barra: proporção do tempo já gasto sobre o total previsto (nunca retrocede)
+      let pct = 0;
+      if (st.status === "done") pct = 100;
+      else if (running && p.eta_seconds !== null) pct = 100 * p.elapsed / Math.max(1, p.elapsed + p.eta_seconds);
+      maxPct = Math.max(maxPct, Math.min(st.status === "done" ? 100 : 99, pct));
+      $("barfill").style.width = maxPct.toFixed(1) + "%";
+      document.title = st.status === "done" ? "✓ text Purify" : `${Math.round(maxPct)}% · text Purify`;
+
+      $("m-elapsed").textContent = fmtDur(p.elapsed);
+      $("m-eta-label").textContent = p.eta_partial ? "Tempo restante (preliminar)" : "Tempo restante (estimado)";
+      $("m-eta").textContent = st.status === "done" ? "concluído" : (running ? fmtEta(p.eta_seconds) : "aguardando");
+      $("m-eta").title = p.eta_partial
+        ? "Estimativa preliminar: o número de páginas que irão para a IA só é conhecido após a leitura."
+        : "Refinada continuamente pelo tempo medido em cada etapa.";
+      $("m-finish").textContent = p.eta_finish
+        ? new Date(p.eta_finish * 1000).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+        : (st.status === "done" ? new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "—");
+      $("m-pages").textContent = p.pages_total ? `${p.pages_read} / ${p.pages_total}` : "—";
+
+      // IA em tempo real
+      const ai = $("ai-live");
+      if (p.unit) {
+        const u = p.unit;
+        const kind = u.key === "vision" ? "IA de visão" : "IA de texto";
+        let what;
+        if (u.phase === "escrevendo") {
+          const speed = u.tokens_per_s ? ` · ${u.tokens_per_s} tokens/s` : "";
+          what = `escrevendo · ${u.tokens} de ~${u.expected_tokens} tokens${speed}`;
+        } else if (u.phase === "analisando") {
+          what = u.key === "vision" ? "analisando a imagem da página (modelos grandes podem levar minutos)" : "lendo o texto";
+        } else {
+          what = u.phase;
+        }
+        ai.innerHTML = "";
+        const dot = document.createElement("span"); dot.className = "dot";
+        ai.appendChild(dot);
+        ai.appendChild(document.createTextNode(
+          `${kind} · página ${u.page} · ${what} · ${fmtDur(u.elapsed)} nesta página, faltam ${fmtEta(u.remaining)}`));
+        ai.style.display = "block";
+      } else {
+        ai.style.display = "none";
       }
 
-      if (!endValue) {
-        data.delete("page_end");
+      // etapas
+      const ul = $("stages");
+      ul.innerHTML = "";
+      for (const s of p.stages || []) {
+        const li = document.createElement("li");
+        li.className = s.status;
+        const ico = document.createElement("span"); ico.className = "ico"; ico.textContent = ICONS[s.status] || "○";
+        const label = document.createElement("span"); label.textContent = s.label;
+        const meta = document.createElement("span"); meta.className = "meta";
+        const bits = [];
+        if (s.total !== null && s.total !== undefined && (s.status === "running" || s.status === "done") && s.total > 0)
+          bits.push(`${s.done}/${s.total}`);
+        else if (s.total_estimate) bits.push(`${s.total_estimate} pág. previstas`);
+        if (s.elapsed !== null && s.elapsed !== undefined && s.status !== "pending") bits.push(fmtDur(s.elapsed));
+        if (s.note) bits.push(s.note);
+        meta.textContent = bits.join(" · ");
+        li.append(ico, label, meta);
+        ul.appendChild(li);
       }
 
-      const start = startValue ? Number(startValue) : null;
-      const end = endValue ? Number(endValue) : null;
-
-      if ((start !== null && start < 1) || (end !== null && end < 1) || (start !== null && end !== null && start > end)) {
-        out.textContent = "Intervalo de paginas invalido.";
-        return;
+      // mapa de saúde das páginas já lidas
+      if (p.pages_total) {
+        $("live-map").style.display = "block";
+        const key = (p.health || []).map((h) => `${h.page}:${h.health}`).join(",") + "|" + p.pages_total;
+        if (key !== lastPagesKey) {
+          lastPagesKey = key;
+          const box = $("live-pages");
+          box.innerHTML = "";
+          const byPage = new Map((p.health || []).map((h) => [h.page, h.health]));
+          const start = p.page_first || 1;
+          for (let i = 0; i < p.pages_total; i++) {
+            const n = start + i;
+            const span = document.createElement("span");
+            const h = byPage.get(n);
+            span.style.background = h === undefined ? "#e3ebf2" : healthColor(h);
+            span.title = h === undefined ? `Página ${n}: a ler` : `Página ${n}: ${h}%`;
+            box.appendChild(span);
+          }
+        }
       }
+    }
 
-      const response = await fetch("/process", {
-        method: "POST",
-        body: data,
-      });
-
-      const text = await response.text();
-      out.textContent = text;
-
-      const disposition = response.headers.get("content-disposition") || "";
-      const match = disposition.match(/filename="?([^";]+)"?/i);
-      const filename = match ? match[1] : "saida.md";
+    function download(text, filename) {
       const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
+    }
+
+    function showSummary(s) {
+      const box = $("summary");
+      box.style.display = "block";
+      box.innerHTML = "";
+      const h = document.createElement("h2");
+      h.textContent = `Saúde média da leitura: ${s.avg_health}% · mínima ${s.min_health}% · ${s.pages} página(s) · ${s.duration}`;
+      box.appendChild(h);
+      const pages = document.createElement("div");
+      pages.className = "pages";
+      for (const p of s.health_by_page) {
+        const span = document.createElement("span");
+        span.style.background = healthColor(p.health);
+        span.title = `Página ${p.page}: ${p.health}%`;
+        pages.appendChild(span);
+      }
+      box.appendChild(pages);
+      const info = document.createElement("div");
+      info.textContent = s.compromised.length
+        ? `Páginas a conferir no original (leitura comprometida ou transcrita por IA): ${s.compromised.join(", ")}`
+        : "Nenhuma página exige conferência.";
+      box.appendChild(info);
+      const btn = document.createElement("button");
+      btn.className = "secondary"; btn.type = "button"; btn.style.marginTop = "10px";
+      btn.textContent = "Baixar novamente";
+      btn.onclick = () => lastResult && download(lastResult.text, lastResult.name);
+      box.appendChild(btn);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      for (const k of ["page_start", "page_end", "password", "operador"]) {
+        if (!String(data.get(k) || "").trim()) data.delete(k);
+      }
+      for (const k of ["anon", "llm", "llm_vision", "remove_repeated"]) {
+        data.set(k, form.elements[k].checked ? "true" : "false");
+      }
+      const start = data.get("page_start") ? Number(data.get("page_start")) : null;
+      const end = data.get("page_end") ? Number(data.get("page_end")) : null;
+      if ((start !== null && start < 1) || (end !== null && end < 1) || (start !== null && end !== null && start > end)) {
+        out.textContent = "Intervalo de páginas inválido.";
+        return;
+      }
+
+      $("submit").disabled = true;
+      $("summary").style.display = "none";
+      $("progress").style.display = "block";
+      $("barfill").style.width = "0";
+      $("live-map").style.display = "none";
+      $("ai-live").style.display = "none";
+      $("stages").innerHTML = "";
+      for (const id of ["m-elapsed", "m-finish", "m-pages"]) $(id).textContent = "—";
+      $("m-eta").textContent = "calculando…";
+      maxPct = 0; lastPagesKey = "";
+      $("phase").textContent = "Enviando arquivo…";
+      out.textContent = "Processando…";
+
+      try {
+        const r = await fetch("/jobs", { method: "POST", body: data });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.detail || "Falha ao enviar o arquivo.");
+        const jobId = j.job_id;
+
+        let st, failures = 0;
+        while (true) {
+          await new Promise((res) => setTimeout(res, 1000));
+          try {
+            const resp = await fetch(`/jobs/${jobId}`);
+            if (resp.status === 404) throw new Error("Processamento não encontrado (o servidor foi reiniciado?).");
+            st = await resp.json();
+            failures = 0;
+          } catch (err) {
+            // falha momentânea de rede não interrompe o acompanhamento
+            if (String(err.message).includes("não encontrado") || ++failures > 30) throw err;
+            $("phase").textContent = "Sem resposta do servidor, tentando novamente…";
+            continue;
+          }
+          renderProgress(st);
+          if (st.status === "done" || st.status === "error") break;
+        }
+        if (st.status === "error") throw new Error(st.error);
+
+        const res = await fetch(`/jobs/${jobId}/result`);
+        const text = await res.text();
+        out.textContent = text;
+        lastResult = { text, name: st.output_name || "saida.md" };
+        download(text, lastResult.name);
+        showSummary(st.summary);
+      } catch (e) {
+        out.innerHTML = "";
+        const span = document.createElement("span");
+        span.className = "error";
+        span.textContent = "Erro: " + e.message;
+        out.appendChild(span);
+        $("phase").textContent = "Falhou.";
+        $("m-eta").textContent = "—";
+        $("ai-live").style.display = "none";
+        document.title = "✕ text Purify";
+      } finally {
+        $("submit").disabled = false;
+      }
     });
+
+    loadStatus();
   </script>
 </body>
 </html>
